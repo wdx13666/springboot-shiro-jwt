@@ -31,7 +31,7 @@ public class ShiroConfig {
         // 自定义url规则
         Map<String, String> filterChainDefinitionMap = new LinkedHashMap<>();
         // 配置不会拦截的链接，顺序判断
-//        filterChainDefinitionMap.put("/login/**", "anon");
+        filterChainDefinitionMap.put("/login/**", "anon");
 //        filterChainDefinitionMap.put("/**.js", "anon");
 //        filterChainDefinitionMap.put("/swagger**/**", "anon");
 //        filterChainDefinitionMap.put("/webjars/**", "anon");
