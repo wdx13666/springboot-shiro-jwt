@@ -6,7 +6,7 @@ import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.authc.UnknownAccountException;
-import org.apache.shiro.authz.annotation.RequiresAuthentication;
+import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.subject.Subject;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,7 +21,7 @@ public class LoginController {
             Subject subject = SecurityUtils.getSubject();
             String token = JwtUtil.sign(username, password);
             JwtToken jwtToken = new JwtToken(token);
-            subject.login(jwtToken);
+            subject.login(new UsernamePasswordToken(username,password));
             return token;
         } catch (UnknownAccountException ex) {
             return "用户不存在！";
@@ -38,14 +38,14 @@ public class LoginController {
      */
     @GetMapping("/unauthorized")
     public String unauthorized() {
-        return "213";
+        return "暂未登录";
     }
 
     /**
      * 测试权限
      * @return
      */
-    @RequiresAuthentication
+//    @RequiresPermissions("perm")
     @GetMapping("/test")
     public String test() {
         return "test";
