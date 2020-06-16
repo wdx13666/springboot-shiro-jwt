@@ -1,50 +1,13 @@
-############################## spring-boot-plus start ##############################
-spring-boot-plus:
-  ######################## Spring Shiro start ########################
-  shiro:
-    # shiro ini 多行字符串配置
-    filter-chain-definitions: |
-      /=anon
-      /static/**=anon
-      /templates/**=anon
-    # 权限配置
-    permission-config:
-      # 排除登陆登出相关
-      - urls: /login,/logout
-        permission: anon
-        # 排除静态资源
-      - urls: /static/**,/templates/**
-        permission: anon
-        # 排除Swagger
-      - urls: /docs,/swagger-ui.html, /webjars/springfox-swagger-ui/**,/swagger-resources/**,/v2/api-docs
-        permission: anon
-        # 排除SpringBootAdmin
-      - urls: /,/favicon.ico,/actuator/**,/instances/**,/assets/**,/sba-settings.js,/applications/**
-        permission: anon
-        # 测试
-      - url: /sysUser/getPageList
-        permission: anon
-  ######################## Spring Shiro end ##########################
-
-  ############################ JWT start #############################
-  jwt:
-    token-name: token
-    secret: 666666
-    issuer: spring-boot-plus
-    audience: web
-    # 默认过期时间1小时，单位：秒
-    expire-second: 3600
-    # 是否刷新token
-    refresh-token: true
-    # 刷新token的时间间隔，默认10分钟，单位：秒
-    refresh-token-countdown: 600
-    # redis校验jwt token是否存在,可选
-    redis-check: true
-    # true: 同一个账号只能是最后一次登陆token有效，false：同一个账号可多次登陆
-    single-login: false
-    # 盐值校验，如果不加自定义盐值，则使用secret校验
-    salt-check: true
-  ############################ JWT end ###############################
-
-############################### spring-boot-plus end ###############################
-
+spring:
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://123.57.27.97:3308/w?useUnicode=true&characterEncoding=utf-8
+#    url: jdbc:mysql://123.57.27.97:3306/w?useUnicode=true&characterEncoding=utf-8&useSSL=false&allowMultiQueries=true&serverTimezone=UTC&allowMultiQueries=true&useAffectedRows=true
+    username: root
+    password: root
+#logging:
+#  level:
+#    root: debug
+server:
+  port: 7001

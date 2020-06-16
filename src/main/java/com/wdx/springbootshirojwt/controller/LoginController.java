@@ -1,4 +1,4 @@
-package com.wdx.springbootshirojwt.contrroller;
+package com.wdx.springbootshirojwt.controller;
 
 import com.wdx.springbootshirojwt.JwtToken;
 import com.wdx.springbootshirojwt.utils.JwtUtil;
@@ -6,7 +6,9 @@ import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.authc.UnknownAccountException;
+import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.apache.shiro.subject.Subject;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -17,10 +19,10 @@ public class LoginController {
     public String login(String username, String password, String code) {
         try {
             Subject subject = SecurityUtils.getSubject();
-            String token = JwtUtil.sign(username, "123456");
+            String token = JwtUtil.sign(username, password);
             JwtToken jwtToken = new JwtToken(token);
             subject.login(jwtToken);
-            return "登录成功";
+            return token;
         } catch (UnknownAccountException ex) {
             return "用户不存在！";
         } catch (IncorrectCredentialsException ex) {
@@ -28,6 +30,25 @@ public class LoginController {
         } catch (AuthenticationException ae) {
             return "密码错误！";
         }
+    }
+
+    /**
+     * 测试权限
+     * @return
+     */
+    @GetMapping("/unauthorized")
+    public String unauthorized() {
+        return "213";
+    }
+
+    /**
+     * 测试权限
+     * @return
+     */
+    @RequiresAuthentication
+    @GetMapping("/test")
+    public String test() {
+        return "test";
     }
 
 

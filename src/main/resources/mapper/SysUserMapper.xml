@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wdx.springbootshirojwt.mapper.SysUserMapper">
+
+    <resultMap id="permissionMap" type="com.wdx.springbootshirojwt.vo.UserAndPermissionVo">
+        <id column="user_id" property="userId"></id>
+        <result column="username" property="username"></result>
+        <collection property="roles" ofType="com.wdx.springbootshirojwt.entity.SysRole">
+            <id column="role_id" property="roleId"></id>
+            <result column="role_name" property="roleName"></result>
+        </collection>
+        <collection property="permissions" ofType="com.wdx.springbootshirojwt.entity.SysPermission">
+            <id column="permission_id" property="permissionId"></id>
+            <result column="url" property="url"></result>
+        </collection>
+    </resultMap>
+
+    <select id="getPermissionByUserId" resultMap="permissionMap">
+        SELECT su.user_id,
+               su.username,
+               su.password,
+               sr.role_name,
+               sp.url
+        FROM sys_user su
+                 LEFT JOIN sys_user_role sur ON su.user_id = sur.user_id
+                 LEFT JOIN sys_role sr ON sr.role_id = sur.role_id
+                 LEFT JOIN sys_role_permission srp ON srp.role_id = sur.role_id
+                 LEFT JOIN sys_permission sp ON sp.permission_id = srp.permission_id
+        WHERE su.user_id = #{userId};
+    </select>
+
+</mapper>

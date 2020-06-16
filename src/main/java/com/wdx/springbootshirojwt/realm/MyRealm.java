@@ -1,28 +1,34 @@
 package com.wdx.springbootshirojwt.realm;
 
 import com.wdx.springbootshirojwt.JwtToken;
+import com.wdx.springbootshirojwt.entity.SysUser;
+import com.wdx.springbootshirojwt.service.impl.SysUserServiceImpl;
 import com.wdx.springbootshirojwt.utils.JwtUtil;
-import org.apache.shiro.authc.AuthenticationException;
-import org.apache.shiro.authc.AuthenticationInfo;
-import org.apache.shiro.authc.AuthenticationToken;
-import org.apache.shiro.authc.SimpleAuthenticationInfo;
+import com.wdx.springbootshirojwt.vo.UserAndPermissionVo;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.shiro.authc.*;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 public class MyRealm extends AuthorizingRealm {
 
-//    @Autowired
-//    private SysUserService sysUserService;
+    @Autowired
+    private SysUserServiceImpl userService;
+
 
     /**
-     * 必须重写此方法，不然shiro会报错
+     * 重写 Realm 的 supports() 方法是通过 JWT 进行登录判断的关键
+     * 因为前文中创建了 JWTToken 用于替换 Shiro 原生 token
+     * 所以必须在此方法中显式的进行替换，否则在进行判断时会一直失败
      *
      * @param token
      * @return
@@ -42,22 +48,20 @@ public class MyRealm extends AuthorizingRealm {
     @Override
     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken auth)
             throws AuthenticationException {
+        log.info("————身份认证方法————");
         String token = (String) auth.getPrincipal();
         String username = JwtUtil.getUsername(token);
-       /* if (StringUtil.isEmpty(username)) {
+        if (StringUtils.isBlank(username)) {
             throw new IncorrectCredentialsException("用户名无效");
         }
-
-        SysUser user = sysUserService.getByUsername(username);
+        SysUser user = userService.getByUserName(username);
         if (user == null) {
             throw new UnknownAccountException("用户不存在");
-        }*/
-
-        if(!JwtUtil.verify(token,username,"123456")){
-            throw new AuthenticationException("密码错误");
         }
-
-        return new SimpleAuthenticationInfo(token, token, getName());
+        if(!JwtUtil.verify(token,username,user.getPassword())){
+            throw new AuthenticationException("账号或密码错误");
+        }
+        return new SimpleAuthenticationInfo(user, token, MyRealm.class.getName());
     }
 
     /**
@@ -68,13 +72,18 @@ public class MyRealm extends AuthorizingRealm {
      */
     @Override
     protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
-        String username = JwtUtil.getUsername(principals.toString());
-//        SysUser user = sysUserService.getByUsername(username);
+        log.info("————权限认证————");
+        SysUser user = (SysUser) principals.getPrimaryPrincipal();
+//        String username = JwtUtil.getUsername(principals.toString());
+//        SysUser byUserName = userService.getByUserName(username);
+        UserAndPermissionVo permissionByUserId = userService.getPermissionByUserId(user.getUserId());
         SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
+        info.setRoles(permissionByUserId.getRoles().stream().map(s -> s.getRoleName()).collect(Collectors.toSet()));
+        info.setStringPermissions(permissionByUserId.getPermissions().stream().map(s -> s.getUrl()).collect(Collectors.toSet()));
         //根据用户名查询权限 TODO 放到redis中
-        List roles = new ArrayList();
+      /*  List roles = new ArrayList();
         roles.parallelStream().forEach(role ->{
             info.addStringPermission("");
-        });
+        });*/
         return info;
     }}

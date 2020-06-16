@@ -1,5 +1,6 @@
 package com.wdx.springbootshirojwt.config;
 
+import com.wdx.springbootshirojwt.cache.RedisCacheManager;
 import com.wdx.springbootshirojwt.filter.JwtFilter;
 import com.wdx.springbootshirojwt.realm.MyRealm;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +35,6 @@ public class ShiroConfig {
         filterChainDefinitionMap.put("/login/**", "anon");
 //        filterChainDefinitionMap.put("/**.js", "anon");
 //        filterChainDefinitionMap.put("/swagger**/**", "anon");
-//        filterChainDefinitionMap.put("/webjars/**", "anon");
         // 添加自己的过滤器并且取名为jwt
         Map<String, Filter> filterMap = new HashMap<>(1);
 
@@ -43,6 +43,8 @@ public class ShiroConfig {
         // 过滤链接定义，从上向下顺序执行，一般将/**放在最为下边
         // 所有请求通过我们自己的JWTFilter
         filterChainDefinitionMap.put("/**", "jwt");
+        // 访问 /unauthorized/** 不通过JWTFilter
+//        filterChainDefinitionMap.put("/unauthorized/**", "anon");
         factoryBean.setFilterChainDefinitionMap(filterChainDefinitionMap);
         return factoryBean;
     }
@@ -63,7 +65,15 @@ public class ShiroConfig {
         evaluator.setSessionStorageEnabled(false);
         subjectDAO.setSessionStorageEvaluator(evaluator);
         securityManager.setSubjectDAO(subjectDAO);
+
+//        securityManager.setCacheManager((CacheManager) redisCacheManager());
         return securityManager;
+    }
+
+    @Bean
+    public RedisCacheManager redisCacheManager(){
+        RedisCacheManager cacheManager = new RedisCacheManager();
+        return  cacheManager;
     }
 
     /**
